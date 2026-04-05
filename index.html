@@ -1666,29 +1666,35 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   loadVideoThumbnails();
 
-  // ==================== Click-to-Load Video ====================
-  function restorePlaceholder(card) {
-    const embed = card.querySelector('.video-embed');
-    if (!embed) return;
-    const ph = document.createElement('div');
-    ph.className = 'video-placeholder';
-    ph.setAttribute('onclick', 'loadVideo(this)');
-    ph.innerHTML = '<svg width="44" height="44" viewBox="0 0 24 24" fill="rgba(255,255,255,0.7)"><polygon points="8,5 19,12 8,19"/></svg>';
-    // Restore thumbnail if saved
-    const thumbUrl = card.dataset.thumbUrl;
-    if (thumbUrl) {
-      ph.style.backgroundImage = 'url(' + thumbUrl + ')';
-      ph.style.backgroundSize = 'cover';
-      ph.style.backgroundPosition = 'center';
-      ph.classList.add('has-thumb');
-    }
-    embed.replaceWith(ph);
+  // ==================== Unified: Stop All Players ====================
+  function stopAllPlayers() {
+    // Restore video placeholders
+    document.querySelectorAll('.video-card .video-embed').forEach(embed => {
+      const card = embed.closest('.video-card');
+      const ph = document.createElement('div');
+      ph.className = 'video-placeholder';
+      ph.setAttribute('onclick', 'loadVideo(this)');
+      ph.innerHTML = '<svg width="44" height="44" viewBox="0 0 24 24" fill="rgba(255,255,255,0.7)"><polygon points="8,5 19,12 8,19"/></svg>';
+      const thumbUrl = card.dataset.thumbUrl;
+      if (thumbUrl) {
+        ph.style.backgroundImage = 'url(' + thumbUrl + ')';
+        ph.style.backgroundSize = 'cover';
+        ph.style.backgroundPosition = 'center';
+        ph.classList.add('has-thumb');
+      }
+      embed.replaceWith(ph);
+    });
+    // Remove music embeds
+    document.querySelectorAll('.music-card .music-player-embed').forEach(e => e.remove());
+    document.querySelectorAll('.music-card .music-cover').forEach(c => c.style.display = '');
+    // Remove drama embeds
+    document.querySelectorAll('.drama-card .drama-embed').forEach(e => e.remove());
+    document.querySelectorAll('.drama-card .drama-thumb').forEach(t => t.style.display = '');
   }
 
+  // ==================== Click-to-Load Video ====================
   window.loadVideo = function(el) {
-    // Stop all other playing videos
-    document.querySelectorAll('.video-card').forEach(card => restorePlaceholder(card));
-
+    stopAllPlayers();
     const card = el.closest('.video-card');
     const bvid = card.dataset.bvid;
     const wrap = document.createElement('div');
@@ -1702,10 +1708,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const card = el.closest('.music-card');
     const bvid = card.dataset.bvid;
     if (!bvid) return;
-    // Stop existing music players
-    document.querySelectorAll('.music-card .music-player-embed').forEach(e => e.remove());
-    document.querySelectorAll('.music-card .music-cover').forEach(c => c.style.display = '');
-    // Show embed
+    stopAllPlayers();
     const cover = card.querySelector('.music-cover');
     if (cover) cover.style.display = 'none';
     const embed = document.createElement('div');
@@ -1719,10 +1722,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const card = el.closest('.drama-card');
     const bvid = card.dataset.bvid;
     if (!bvid) return;
-    // Stop existing drama players
-    document.querySelectorAll('.drama-card .drama-embed').forEach(e => e.remove());
-    document.querySelectorAll('.drama-card .drama-thumb').forEach(t => t.style.display = '');
-    // Hide thumb, show embed
+    stopAllPlayers();
     const thumb = card.querySelector('.drama-thumb');
     if (thumb) thumb.style.display = 'none';
     const embed = document.createElement('div');
